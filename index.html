@@ -553,7 +553,7 @@ var PALETTE=[
 ];
 
 // COUNTDOWN
-var SHOOT_DATE=new Date('2026-05-06');
+var SHOOT_DATE=new Date(2026,4,6); // 6 mai 2026 minuit heure locale
 var TODAY=new Date();TODAY.setHours(0,0,0,0);
 document.getElementById('jcount').textContent=Math.ceil((SHOOT_DATE-TODAY)/86400000);
 
