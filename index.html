@@ -323,34 +323,30 @@ body::before{display:none;}
 @media(max-width:560px){.venues-grid{grid-template-columns:1fr;}}
 .venue-card{border:1px solid var(--line);background:transparent;overflow:hidden;transition:border-color .12s;}
 .venue-card:hover{border-color:var(--line2);}
-.venue-card.voted-up{border-left:3px solid var(--green);}
-.venue-card.voted-down{border-left:3px solid var(--red);}
-.venue-thumb{width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;overflow:hidden;position:relative;}
-.venue-thumb img{width:100%;height:100%;object-fit:cover;}
-.venue-thumb-label{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;color:var(--t);background:var(--bg);padding:2px 7px;text-transform:uppercase;letter-spacing:.08em;}
+.venue-card.has-vote{border-left:3px solid #e0a030;}
+.venue-thumb{width:100%;height:160px;background:var(--bg3);position:relative;overflow:hidden;}
+.venue-thumb-img{width:100%;height:100%;object-fit:cover;display:block;}
+.venue-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t4);text-transform:uppercase;letter-spacing:.1em;}
+.venue-thumb-label{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:2px 8px;text-transform:uppercase;letter-spacing:.08em;backdrop-filter:blur(4px);}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;color:#fff;font-size:16px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;backdrop-filter:blur(4px);}
+.carousel-btn:hover{background:rgba(0,0,0,.7);}
+.carousel-btn.prev{left:6px;}
+.carousel-btn.next{right:6px;}
+.carousel-dots{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:4px;}
+.carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5);transition:background .12s;}
+.carousel-dot.active{background:#fff;}
+.venue-edit-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.45);border:none;color:#fff;font-size:11px;padding:2px 8px;cursor:pointer;opacity:0;transition:opacity .12s;backdrop-filter:blur(4px);}
+.venue-card:hover .venue-edit-btn{opacity:1;}
 .venue-body{padding:12px 14px;}
 .venue-name{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px;}
 .venue-loc{font-size:12px;color:var(--t3);margin-bottom:8px;}
-.venue-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
-.venue-tag{font-size:10px;padding:2px 7px;border:1px solid var(--line);color:var(--t2);letter-spacing:.04em;}
-.venue-tag.ok{border-color:var(--green);color:var(--green);}
-.venue-tag.price{border-color:var(--line2);color:var(--t2);}
 .venue-link{font-size:11px;color:var(--t3);text-decoration:none;border-bottom:1px solid var(--line);transition:color .12s;}
 .venue-link:hover{color:var(--t);}
-.venue-votes{display:flex;align-items:center;gap:0;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;}
-.vote-btn{flex:1;padding:7px;background:transparent;border:1px solid var(--line);font-size:13px;cursor:pointer;color:var(--t3);transition:all .12s;font-family:var(--font-body);}
-.vote-btn:first-child{border-right:none;}
-.vote-btn:hover{color:var(--t);border-color:var(--line2);}
-.vote-btn.active-up{background:var(--greenfaint);color:var(--green);border-color:var(--green);}
-.vote-btn.active-down{background:var(--redfaint);color:var(--red);border-color:var(--red);}
-.vote-score{padding:7px 12px;font-size:13px;font-weight:700;color:var(--t2);border:1px solid var(--line);min-width:36px;text-align:center;}
 .venues-ranking{display:flex;flex-direction:column;gap:4px;margin-bottom:24px;}
 .rank-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);}
 .rank-row:last-child{border-bottom:none;}
 .rank-num{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--t3);width:20px;}
 .rank-name{flex:1;font-size:13px;color:var(--t);}
-.rank-bar-wrap{width:120px;height:2px;background:var(--line);}
-.rank-bar-fill{height:100%;background:var(--green);}
 .rank-score{font-size:13px;font-weight:700;color:var(--t2);min-width:24px;text-align:right;}
 </style>
 </head>
@@ -447,9 +443,45 @@ body::before{display:none;}
       <div class="header-wordmark"><span>SEGMENTS</span> <span style="color:var(--t3);font-weight:400;font-size:16px">Lieux</span></div>
       <div style="font-size:13px;color:var(--t3);margin-top:4px">Votez pour vos maisons préférées — les résultats sont visibles par toute l'équipe.</div>
     </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" id="btn-add-venue" style="display:none" onclick="openVenueModal()">+ Lieu</button>
+    </div>
   </div>
   <div id="venues-score-bar" style="margin-bottom:24px"></div>
   <div id="venues-grid"></div>
+</div>
+
+<!-- VENUE MODAL -->
+<div class="modal-overlay" id="venue-modal">
+  <div class="modal">
+    <div class="modal-title" id="venue-modal-title">Nouveau lieu</div>
+    <input type="hidden" id="venue-edit-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="venue-name-in" placeholder="Villa Souvenir"></div>
+      <div class="form-group"><label class="form-label">Ville / Lieu</label><input class="form-input" id="venue-loc-in" placeholder="Marseille"></div>
+      <div class="form-group"><label class="form-label">Distance Marseille</label><input class="form-input" id="venue-dist-in" placeholder="40 min"></div>
+      <div class="form-group"><label class="form-label">Chambres</label><input class="form-input" id="venue-rooms-in" placeholder="5 ch / 8 lits"></div>
+      <div class="form-group"><label class="form-label">Tarif</label><input class="form-input" id="venue-price-in" placeholder="1 500€ × 2 nuits"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="venue-type-in">
+          <option value="logement+shooting">Logement + shooting</option>
+          <option value="shooting uniquement">Shooting uniquement</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Piscine</label>
+      <label class="shoot-toggle"><input type="checkbox" id="venue-pool-in"> Oui</label>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="venue-notes-in" placeholder="Détails, contraintes…"></textarea></div>
+    <div class="form-group"><label class="form-label">Lien</label><input class="form-input" id="venue-link-in" placeholder="https://airbnb.com/…"></div>
+    <div class="form-group"><label class="form-label">Image 1 (URL)</label><input class="form-input" id="venue-img1-in" placeholder="https://…"></div>
+    <div class="form-group"><label class="form-label">Image 2 (URL)</label><input class="form-input" id="venue-img2-in" placeholder="https://…"></div>
+    <div class="form-group"><label class="form-label">Image 3 (URL)</label><input class="form-input" id="venue-img3-in" placeholder="https://…"></div>
+    <div class="modal-footer">
+      <div><button class="btn btn-danger btn-sm" id="venue-delete-btn" style="display:none" onclick="deleteVenueFromModal()">Supprimer</button></div>
+      <div class="modal-footer-right"><button class="btn" onclick="closeModal('venue-modal')">Annuler</button><button class="btn btn-primary" onclick="saveVenue()">Enregistrer</button></div>
+    </div>
+  </div>
 </div>
 
 <!-- PAGE ADMIN -->
@@ -566,6 +598,7 @@ var SUPA_KEY='sb_publishable_QmsPEPIUrxQ-ADr3DvOBiw_34qI55Xo';
 function supaFetch(path,method,body){
   var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
   if(method==='POST')h['Prefer']='resolution=merge-duplicates,return=representation';
+  if(method==='PATCH')h['Prefer']='return=representation';
   var o={method:method||'GET',headers:h};
   if(body!==undefined)o.body=JSON.stringify(body);
   return fetch(SUPA_URL+'/rest/v1/'+path,o);
@@ -1092,7 +1125,7 @@ function showPage(id){
     renderAdminPersons();renderAdminPlanning();if(isMaster())renderAdminRoles();
   }
   if(id==='page-venues'){
-    loadVenueVotes().then(function(){renderVenues();});
+    loadVenues().then(function(){renderVenues();});
   }
 }
 function switchView(id,btn){
@@ -1110,76 +1143,63 @@ function switchAdminTab(id,btn){
   document.querySelectorAll('.admin-tab-content').forEach(function(c){c.classList.remove('active');});
   document.getElementById(id).classList.add('active');
 }
-['task-modal','person-modal','account-modal','planning-modal'].forEach(function(mid){
+['task-modal','person-modal','account-modal','planning-modal','venue-modal'].forEach(function(mid){
   document.getElementById(mid).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
 
-// ── VENUES DATA ──
-var VENUES_DATA=[
-  {id:1,name:'Villa Ollioules',loc:'Ollioules',dist:'45 min',pool:false,terrace:true,rooms:'7',beds:'9',price:'1 600€ × 2 nuits',type:'logement + shooting',link:'',notes:'2 nuits obligatoires. Voir si négo.'},
-  {id:2,name:'Villa Sanary-sur-Mer',loc:'Sanary-sur-Mer',dist:'50 min',pool:true,terrace:true,rooms:'5',beds:'8',price:'1 300€ × 2 nuits',type:'logement + shooting',link:'',notes:'2 nuits obligatoires. Voir si négo.'},
-  {id:3,name:'Villa Anse Méjean',loc:'Toulon',dist:'1h15',pool:false,terrace:true,rooms:'5',beds:'7',price:'1 500€ × 2 nuits',type:'logement + shooting',link:'',notes:'Terrasse vue mer. 2 nuits obligatoires.'},
-  {id:4,name:'Villa Dauphin',loc:'Luberon',dist:'1h10 d\'Aix TGV',pool:true,terrace:true,rooms:'7',beds:'8',price:'1 650€ × 2 nuits',type:'logement + shooting',link:'',notes:'2 nuits obligatoires. Voir si négo.'},
-  {id:5,name:'Maison Archi Ensues',loc:'Ensuès-la-Redonne',dist:'35 min',pool:true,terrace:true,rooms:'3',beds:'N/C',price:'< 2 200€/jour à confirmer',type:'shooting uniquement',link:'',notes:'Accès mer. Location journée.'},
-  {id:6,name:'Mas Typique Provence',loc:'Avignon',dist:'1h30 (30 min Avignon TGV)',pool:true,terrace:true,rooms:'8',beds:'N/C',price:'< 2 200€/jour à confirmer',type:'shooting uniquement',link:'',notes:'Jardin.'},
-  {id:7,name:'Mas Provence',loc:'Avignon',dist:'1h30 (30 min Avignon TGV)',pool:true,terrace:true,rooms:'6',beds:'N/C',price:'< 2 200€/jour à confirmer',type:'shooting uniquement',link:'',notes:'Jardin + étang.'},
-  {id:8,name:'Villa Almanarre',loc:'Hyères',dist:'1h',pool:true,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'logement + shooting',link:'',notes:'Jardin.'},
-  {id:9,name:'Villa Sedona',loc:'La Ciotat',dist:'40 min',pool:true,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'logement + shooting',link:'',notes:'Intérieur vintage / archi.'},
-  {id:10,name:'Villa Souvenir',loc:'Marseille',dist:'Sur place',pool:true,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'logement + shooting',link:'',notes:'Vue mer.'},
-  {id:11,name:'Villa Anemone',loc:'Carqueiranne',dist:'55 min',pool:true,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'shooting uniquement',link:'https://www.instagram.com/',notes:'Architecture brutaliste béton.'},
-  {id:12,name:'Villa Benkemoun',loc:'',dist:'1h20',pool:true,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'logement + shooting',link:'',notes:'Pool house.'},
-  {id:13,name:'Villa Medjé',loc:'Marseille (Corniche)',dist:'Sur place',pool:false,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'shooting uniquement',link:'https://www.villamedje.fr/',notes:'Vue mer.'},
-  {id:14,name:'Casa Niolon',loc:'Marseille (Niolon)',dist:'30 min',pool:false,terrace:true,rooms:'N/C',beds:'N/C',price:'1 950€ × 3 nuits min',type:'logement + shooting',link:'https://www.weeks-off.com/fr/maisons/casa-niolon-provence-maison-calanques',notes:'3 nuits obligatoires. Calanques.'},
-  {id:15,name:'Maison Joon',loc:'Marseille',dist:'Sur place',pool:false,terrace:false,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'shooting uniquement',link:'https://www.instagram.com/maison_joon_marseille/',notes:''},
-  {id:16,name:'Maison Olea',loc:'Marseille',dist:'Sur place',pool:false,terrace:false,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'shooting uniquement',link:'https://www.instagram.com/maison_olea/',notes:''},
-  {id:17,name:'Le Cabanon Malmousque',loc:'Marseille (Malmousque)',dist:'Sur place',pool:false,terrace:true,rooms:'N/C',beds:'N/C',price:'À confirmer',type:'shooting uniquement',link:'https://www.instagram.com/lecabanonmalmousque/',notes:''},
-  {id:18,name:'Maison Felisa',loc:'Saint-Bauzély',dist:'1h30 (55 min Avignon)',pool:false,terrace:true,rooms:'6-7 pers',beds:'N/C',price:'1 350€/semaine',type:'logement + shooting',link:'https://maison-felisa.com/maison-vacances',notes:'À priori pas cher.'},
-];
-
+// ── VENUES ──
+var VENUES=[];
 var VENUE_VOTES={};
+var carouselState={};
 
-function loadVenueVotes(){
-  VENUE_VOTES={};
-  return supaFetch('venue_votes?select=venue_id,person_id,vote').then(function(r){return r.json();}).then(function(rows){
-    if(!Array.isArray(rows))return;
-    rows.forEach(function(r){
+function loadVenues(){
+  return Promise.all([
+    supaFetch('venues?select=*&order=position').then(function(r){return r.json();}),
+    supaFetch('venue_votes?select=venue_id,person_id,vote').then(function(r){return r.json();})
+  ]).then(function(res){
+    VENUES=Array.isArray(res[0])?res[0]:[];
+    VENUE_VOTES={};
+    if(Array.isArray(res[1]))res[1].forEach(function(r){
       if(!VENUE_VOTES[r.venue_id])VENUE_VOTES[r.venue_id]={};
       VENUE_VOTES[r.venue_id][r.person_id]=r.vote;
     });
+    // Seed venues from static data if empty
+    if(!VENUES.length){
+      var seed=VENUES_SEED.map(function(v,i){return Object.assign({},v,{position:i,updated_at:new Date().toISOString()});});
+      return supaFetch('venues','POST',seed).then(function(r){return r.json();}).then(function(rows){
+        VENUES=Array.isArray(rows)?rows:seed;
+      });
+    }
   }).catch(function(){});
 }
 
-function voteVenue(venueId,stars){
+function venueAvg(id){
+  var v=Object.values(VENUE_VOTES[id]||{}).filter(function(x){return x>0;});
+  return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;
+}
+function venueVoteCount(id){
+  return Object.values(VENUE_VOTES[id]||{}).filter(function(x){return x>0;}).length;
+}
+
+function voteVenue(id,stars){
   if(!SESSION)return;
   var pid=SESSION.person_id;
-  if(!VENUE_VOTES[venueId])VENUE_VOTES[venueId]={};
-  var cur=VENUE_VOTES[venueId][pid]||0;
-  var newVote=cur===stars?0:stars;
-  VENUE_VOTES[venueId][pid]=newVote;
+  if(!VENUE_VOTES[id])VENUE_VOTES[id]={};
+  var cur=VENUE_VOTES[id][pid]||0;
+  var nv=cur===stars?0:stars;
+  VENUE_VOTES[id][pid]=nv;
   renderVenues();
-  sync(function(){
-    return supaFetch('venue_votes?on_conflict=venue_id,person_id','POST',[{venue_id:venueId,person_id:pid,vote:newVote,updated_at:new Date().toISOString()}]);
-  });
+  sync(function(){return supaFetch('venue_votes?on_conflict=venue_id,person_id','POST',[{venue_id:id,person_id:pid,vote:nv,updated_at:new Date().toISOString()}]);});
 }
 
-function venueAvg(venueId){
-  var votes=Object.values(VENUE_VOTES[venueId]||{}).filter(function(v){return v>0;});
-  if(!votes.length)return null;
-  return votes.reduce(function(s,v){return s+v;},0)/votes.length;
-}
-function venueVoteCount(venueId){
-  return Object.values(VENUE_VOTES[venueId]||{}).filter(function(v){return v>0;}).length;
-}
-
-function starsHTML(venueId,myVote,interactive){
-  var avg=venueAvg(venueId);
-  var html='<div style="display:flex;align-items:center;gap:7px;">';
-  html+='<div style="display:flex;gap:1px;" id="stars-'+venueId+'">';
+function starsHTML(id,myVote,interactive){
+  var avg=venueAvg(id);
+  var html='<div style="display:flex;align-items:center;gap:7px;"><div style="display:flex;gap:1px;" id="stars-'+id+'">';
   for(var i=1;i<=5;i++){
     var filled=interactive?(myVote>=i):(avg!==null&&avg>=i-0.5);
     var col=filled?'#e0a030':'var(--line2)';
     if(interactive){
-      html+='<span onclick="voteVenue('+venueId+','+i+')" onmouseover="hoverStars('+venueId+','+i+')" onmouseout="unhoverStars('+venueId+')" style="cursor:pointer;font-size:22px;color:'+col+';transition:color .1s;user-select:none;">★</span>';
+      html+='<span onclick="voteVenue('+id+','+i+')" onmouseover="hoverStars('+id+','+i+')" onmouseout="unhoverStars('+id+')" style="cursor:pointer;font-size:22px;color:'+col+';transition:color .1s;user-select:none;">★</span>';
     } else {
       html+='<span style="font-size:16px;color:'+col+';">★</span>';
     }
@@ -1187,43 +1207,77 @@ function starsHTML(venueId,myVote,interactive){
   html+='</div>';
   if(avg!==null){
     html+='<span style="font-size:14px;font-weight:700;color:var(--t)">'+avg.toFixed(1)+'</span>';
-    html+='<span style="font-size:12px;color:var(--t3)">/ 5 · '+venueVoteCount(venueId)+' vote'+(venueVoteCount(venueId)>1?'s':'')+'</span>';
+    html+='<span style="font-size:12px;color:var(--t3)">/ 5 · '+venueVoteCount(id)+' vote'+(venueVoteCount(id)>1?'s':'')+'</span>';
   } else {
     html+='<span style="font-size:12px;color:var(--t3)">Pas encore noté</span>';
   }
   if(interactive&&myVote>0){
-    html+='<button onclick="voteVenue('+venueId+',0)" style="font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:2px;">✕</button>';
+    html+='<button onclick="voteVenue('+id+',0)" style="font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:2px;">✕</button>';
   }
   return html+'</div>';
 }
 
-function hoverStars(venueId,n){
-  var el=document.getElementById('stars-'+venueId);
-  if(!el)return;
-  var spans=el.querySelectorAll('span');
-  spans.forEach(function(s,i){s.style.color=i<n?'#e0a030':'var(--line2)';});
+function hoverStars(id,n){
+  var el=document.getElementById('stars-'+id);if(!el)return;
+  el.querySelectorAll('span').forEach(function(s,i){s.style.color=i<n?'#e0a030':'var(--line2)';});
 }
-function unhoverStars(venueId){
+function unhoverStars(id){
   var pid=SESSION?SESSION.person_id:null;
-  var myVote=pid?(VENUE_VOTES[venueId]||{})[pid]||0:0;
-  var el=document.getElementById('stars-'+venueId);
-  if(!el)return;
-  var spans=el.querySelectorAll('span');
-  spans.forEach(function(s,i){s.style.color=i<myVote?'#e0a030':'var(--line2)';});
+  var mv=pid?(VENUE_VOTES[id]||{})[pid]||0:0;
+  var el=document.getElementById('stars-'+id);if(!el)return;
+  el.querySelectorAll('span').forEach(function(s,i){s.style.color=i<mv?'#e0a030':'var(--line2)';});
+}
+
+function carouselNext(id,dir){
+  var v=VENUES.find(function(x){return x.id===id;});if(!v)return;
+  var imgs=[v.img1,v.img2,v.img3].filter(Boolean);
+  if(imgs.length<2)return;
+  if(!carouselState[id])carouselState[id]=0;
+  carouselState[id]=(carouselState[id]+dir+imgs.length)%imgs.length;
+  updateCarousel(id,imgs);
+}
+function updateCarousel(id,imgs){
+  var idx=carouselState[id]||0;
+  var img=document.getElementById('cimg-'+id);
+  var dots=document.getElementById('cdots-'+id);
+  if(img)img.src=imgs[idx];
+  if(dots){
+    dots.querySelectorAll('.carousel-dot').forEach(function(d,i){
+      d.classList.toggle('active',i===idx);
+    });
+  }
+}
+
+function thumbHTML(v){
+  var imgs=[v.img1,v.img2,v.img3].filter(Boolean);
+  var editBtn=isAdmin()?'<button class="venue-edit-btn" onclick="openVenueModal('+v.id+')">✏ Modifier</button>':'';
+  if(!imgs.length){
+    return '<div class="venue-thumb">'
+      +'<div class="venue-thumb-placeholder">'+esc(v.loc||'Option')+'</div>'
+      +'<span class="venue-thumb-label">Option '+v.position+'</span>'
+      +editBtn+'</div>';
+  }
+  var dotsHTML='<div class="carousel-dots" id="cdots-'+v.id+'">'+imgs.map(function(_,i){return '<div class="carousel-dot'+(i===0?' active':'')+'"></div>';}).join('')+'</div>';
+  var prevBtn=imgs.length>1?'<button class="carousel-btn prev" onclick="carouselNext('+v.id+',-1)">‹</button>':'';
+  var nextBtn=imgs.length>1?'<button class="carousel-btn next" onclick="carouselNext('+v.id+',1)">›</button>':'';
+  return '<div class="venue-thumb">'
+    +'<img id="cimg-'+v.id+'" class="venue-thumb-img" src="'+esc(imgs[0])+'" onerror="this.style.display=\'none\'">'
+    +'<span class="venue-thumb-label">Option '+v.position+'</span>'
+    +prevBtn+nextBtn+dotsHTML+editBtn+'</div>';
 }
 
 function renderVenues(){
   var pid=SESSION?SESSION.person_id:null;
+  if(isAdmin()){var b=document.getElementById('btn-add-venue');if(b)b.style.display='inline-block';}
 
   // Ranking
-  var ranked=VENUES_DATA.slice().sort(function(a,b){
+  var ranked=VENUES.slice().sort(function(a,b){
     var aa=venueAvg(a.id)||0,ab=venueAvg(b.id)||0;
     if(ab!==aa)return ab-aa;
     return venueVoteCount(b.id)-venueVoteCount(a.id);
   });
-  var hasVotes=ranked.some(function(v){return venueVoteCount(v.id)>0;});
   var rankHTML='';
-  if(hasVotes){
+  if(ranked.some(function(v){return venueVoteCount(v.id)>0;})){
     rankHTML='<div style="margin-bottom:10px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.14em;">Classement</div><div class="venues-ranking">';
     var n=0;
     ranked.forEach(function(v){
@@ -1233,7 +1287,7 @@ function renderVenues(){
         +'<div class="rank-name">'+esc(v.name)+'</div>'
         +'<div style="display:flex;gap:1px;">'+[1,2,3,4,5].map(function(s){return '<span style="font-size:13px;color:'+(avg>=s-0.5?'#e0a030':'var(--line2)')+'">★</span>';}).join('')+'</div>'
         +'<div class="rank-score">'+avg.toFixed(1)+'</div>'
-        +'<div style="font-size:11px;color:var(--t3);margin-left:3px;">('+venueVoteCount(v.id)+')</div>'
+        +'<span style="font-size:11px;color:var(--t3);margin-left:3px;">('+venueVoteCount(v.id)+')</span>'
         +'</div>';
     });
     rankHTML+='</div>';
@@ -1241,9 +1295,8 @@ function renderVenues(){
   document.getElementById('venues-score-bar').innerHTML=rankHTML;
 
   // Grid
-  var html='<div class="venues-grid">'+VENUES_DATA.map(function(v){
+  var html='<div class="venues-grid">'+VENUES.map(function(v){
     var myVote=pid?(VENUE_VOTES[v.id]||{})[pid]||0:0;
-    var avg=venueAvg(v.id);
     var borderStyle=myVote>0?'border-left:3px solid #e0a030;':'';
     var infoLines=[
       {label:'Distance',val:v.dist},
@@ -1252,28 +1305,112 @@ function renderVenues(){
       {label:'Tarif',val:v.price},
       {label:'Type',val:v.type==='shooting uniquement'?'Shooting only':'Logement + shooting'},
     ];
-    var infoHTML=infoLines.filter(function(l){return l.val&&l.val!=='N/C';}).map(function(l){
+    var infoHTML=infoLines.filter(function(l){return l.val&&l.val!=='N/C'&&l.val!=='Non';}).map(function(l){
       return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line);font-size:12px;">'
         +'<span style="color:var(--t3)">'+l.label+'</span>'
         +'<span style="color:var(--t);font-weight:500">'+esc(l.val)+'</span></div>';
     }).join('');
     return '<div class="venue-card" style="'+borderStyle+'">'
-      +'<div class="venue-thumb"><span class="venue-thumb-label">Option '+v.id+'</span>'
-      +'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t4);letter-spacing:.1em;text-transform:uppercase;">'+esc(v.loc)+'</div></div>'
+      +thumbHTML(v)
       +'<div class="venue-body">'
       +'<div class="venue-name">'+esc(v.name)+'</div>'
-      +'<div class="venue-loc" style="margin-bottom:10px">'+esc(v.loc)+'</div>'
+      +'<div class="venue-loc" style="margin-bottom:8px">'+esc(v.loc||'')+'</div>'
       +infoHTML
       +(v.notes?'<div style="font-size:12px;color:var(--t3);margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">'+esc(v.notes)+'</div>':'')
-      +(v.link?'<div style="margin-top:8px"><a class="venue-link" href="'+v.link+'" target="_blank" rel="noopener">Voir le lieu →</a></div>':'')
+      +(v.link?'<div style="margin-top:8px"><a class="venue-link" href="'+esc(v.link)+'" target="_blank" rel="noopener">Voir le lieu →</a></div>':'')
       +'<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">'
       +'<div style="font-size:11px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">'+(pid?'Votre note':'Note moyenne')+'</div>'
       +starsHTML(v.id,myVote,!!pid)
-      +'</div>'
-      +'</div></div>';
+      +'</div></div></div>';
   }).join('')+'</div>';
   document.getElementById('venues-grid').innerHTML=html;
 }
+
+// VENUE CRUD
+function openVenueModal(id){
+  if(!isAdmin())return;
+  var v=id?VENUES.find(function(x){return x.id===id;}):null;
+  document.getElementById('venue-modal-title').textContent=v?'Modifier le lieu':'Nouveau lieu';
+  document.getElementById('venue-edit-id').value=id||'';
+  document.getElementById('venue-delete-btn').style.display=v?'inline-block':'none';
+  document.getElementById('venue-name-in').value=v?v.name||'':'';
+  document.getElementById('venue-loc-in').value=v?v.loc||'':'';
+  document.getElementById('venue-dist-in').value=v?v.dist||'':'';
+  document.getElementById('venue-rooms-in').value=v?v.rooms||'':'';
+  document.getElementById('venue-price-in').value=v?v.price||'':'';
+  document.getElementById('venue-type-in').value=v?v.type||'logement+shooting':'logement+shooting';
+  document.getElementById('venue-pool-in').checked=v?!!v.pool:false;
+  document.getElementById('venue-notes-in').value=v?v.notes||'':'';
+  document.getElementById('venue-link-in').value=v?v.link||'':'';
+  document.getElementById('venue-img1-in').value=v?v.img1||'':'';
+  document.getElementById('venue-img2-in').value=v?v.img2||'':'';
+  document.getElementById('venue-img3-in').value=v?v.img3||'':'';
+  document.getElementById('venue-modal').classList.add('open');
+}
+function saveVenue(){
+  var eid=parseInt(document.getElementById('venue-edit-id').value)||null;
+  var data={
+    name:document.getElementById('venue-name-in').value.trim(),
+    loc:document.getElementById('venue-loc-in').value.trim(),
+    dist:document.getElementById('venue-dist-in').value.trim(),
+    rooms:document.getElementById('venue-rooms-in').value.trim(),
+    price:document.getElementById('venue-price-in').value.trim(),
+    type:document.getElementById('venue-type-in').value,
+    pool:document.getElementById('venue-pool-in').checked,
+    notes:document.getElementById('venue-notes-in').value.trim(),
+    link:document.getElementById('venue-link-in').value.trim(),
+    img1:document.getElementById('venue-img1-in').value.trim()||null,
+    img2:document.getElementById('venue-img2-in').value.trim()||null,
+    img3:document.getElementById('venue-img3-in').value.trim()||null,
+    updated_at:new Date().toISOString()
+  };
+  if(!data.name)return;
+  closeModal('venue-modal');
+  if(eid){
+    var idx=VENUES.findIndex(function(v){return v.id===eid;});
+    if(idx>-1)VENUES[idx]=Object.assign({},VENUES[idx],data);
+    renderVenues();
+    sync(function(){return supaFetch('venues?id=eq.'+eid,'PATCH',data);});
+  } else {
+    data.position=VENUES.length;
+    sync(function(){
+      return supaFetch('venues','POST',[data]).then(function(r){return r.json();}).then(function(rows){
+        if(rows&&rows[0])VENUES.push(rows[0]);
+        renderVenues();
+      });
+    });
+  }
+}
+function deleteVenueFromModal(){
+  var eid=parseInt(document.getElementById('venue-edit-id').value);
+  if(!eid||!confirm('Supprimer ce lieu ?'))return;
+  closeModal('venue-modal');
+  VENUES=VENUES.filter(function(v){return v.id!==eid;});
+  renderVenues();
+  sync(function(){return supaDelete('venues','id',eid);});
+}
+
+// Seed static venues data (only used if venues table empty)
+var VENUES_SEED=[
+  {name:'Villa Ollioules',loc:'Ollioules',dist:'45 min de Marseille',pool:false,rooms:'7 ch / 9 lits',price:'1 600€ × 2 nuits',type:'logement+shooting',link:'',notes:'2 nuits obligatoires. Terrasses.'},
+  {name:'Villa Sanary-sur-Mer',loc:'Sanary-sur-Mer',dist:'50 min de Marseille',pool:true,rooms:'5 ch / 8 lits',price:'1 300€ × 2 nuits',type:'logement+shooting',link:'',notes:'2 nuits obligatoires. Terrasses.'},
+  {name:'Villa Anse Méjean',loc:'Toulon',dist:'1h15 de Marseille',pool:false,rooms:'5 ch / 7 lits',price:'1 500€ × 2 nuits',type:'logement+shooting',link:'',notes:'Terrasse vue mer.'},
+  {name:'Villa Dauphin',loc:'Luberon',dist:'1h10 d\'Aix TGV',pool:true,rooms:'7 ch / 8 lits',price:'1 650€ × 2 nuits',type:'logement+shooting',link:'',notes:'Terrasses.'},
+  {name:'Maison Archi Ensues',loc:'Ensuès-la-Redonne',dist:'35 min de Marseille',pool:true,rooms:'3 ch',price:'< 2 200€/jour',type:'shooting uniquement',link:'',notes:'Terrasse + accès mer.'},
+  {name:'Mas Typique Provence',loc:'Avignon',dist:'30 min Avignon TGV',pool:true,rooms:'8 ch',price:'< 2 200€/jour',type:'shooting uniquement',link:'',notes:'Terrasse + jardin.'},
+  {name:'Mas Provence',loc:'Avignon',dist:'30 min Avignon TGV',pool:true,rooms:'6 ch',price:'< 2 200€/jour',type:'shooting uniquement',link:'',notes:'Terrasse + jardin + étang.'},
+  {name:'Villa Almanarre',loc:'Hyères',dist:'1h de Marseille',pool:true,rooms:'N/C',price:'à confirmer',type:'logement+shooting',link:'',notes:'Terrasse + jardin.'},
+  {name:'Villa Sedona',loc:'La Ciotat',dist:'40 min de Marseille',pool:true,rooms:'N/C',price:'à confirmer',type:'logement+shooting',link:'',notes:'Intérieur vintage/archi.'},
+  {name:'Villa Souvenir',loc:'Marseille',dist:'Sur place',pool:true,rooms:'N/C',price:'à confirmer',type:'logement+shooting',link:'',notes:'Vue mer.'},
+  {name:'Villa Anemone',loc:'Carqueiranne',dist:'55 min de Marseille',pool:true,rooms:'N/C',price:'à confirmer',type:'shooting uniquement',link:'https://www.instagram.com/',notes:'Architecture brutaliste béton.'},
+  {name:'Villa Benkemoun',loc:'',dist:'1h20 de Marseille',pool:true,rooms:'N/C',price:'à confirmer',type:'logement+shooting',link:'',notes:'Terrasse + jardin + pool house.'},
+  {name:'Villa Medjé',loc:'Marseille (Corniche)',dist:'Sur place',pool:false,rooms:'N/C',price:'à confirmer',type:'shooting uniquement',link:'https://www.villamedje.fr/',notes:'Vue mer.'},
+  {name:'Casa Niolon',loc:'Marseille (Niolon)',dist:'30 min',pool:false,rooms:'N/C',price:'1 950€ × 3 nuits min',type:'logement+shooting',link:'https://www.weeks-off.com/fr/maisons/casa-niolon-provence-maison-calanques',notes:'3 nuits obligatoires. Calanques.'},
+  {name:'Maison Joon',loc:'Marseille',dist:'Sur place',pool:false,rooms:'N/C',price:'à confirmer',type:'shooting uniquement',link:'https://www.instagram.com/maison_joon_marseille/',notes:''},
+  {name:'Maison Olea',loc:'Marseille',dist:'Sur place',pool:false,rooms:'N/C',price:'à confirmer',type:'shooting uniquement',link:'https://www.instagram.com/maison_olea/',notes:''},
+  {name:'Le Cabanon Malmousque',loc:'Marseille (Malmousque)',dist:'Sur place',pool:false,rooms:'N/C',price:'à confirmer',type:'shooting uniquement',link:'https://www.instagram.com/lecabanonmalmousque/',notes:''},
+  {name:'Maison Felisa',loc:'Saint-Bauzély',dist:'55 min Avignon',pool:false,rooms:'6-7 pers',price:'1 350€/semaine',type:'logement+shooting',link:'https://maison-felisa.com/maison-vacances',notes:'À priori pas cher.'},
+];
 
 // ── SEED DATA ──
 var SEED_PERSONS=[
