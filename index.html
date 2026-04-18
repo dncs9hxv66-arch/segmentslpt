@@ -1304,7 +1304,7 @@ function renderVenues(){
       {label:'Tarif',val:v.price},
       {label:'Type',val:v.type==='shooting uniquement'?'Shooting only':'Logement + shooting'},
     ];
-    var infoHTML=infoLines.filter(function(l){return l.val&&l.val!=='N/C'&&l.val!=='Non';}).map(function(l){
+    var infoHTML=infoLines.filter(function(l){return l.val&&l.val!=='N/C';}).map(function(l){
       return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line);font-size:12px;">'
         +'<span style="color:var(--t3)">'+l.label+'</span>'
         +'<span style="color:var(--t);font-weight:500">'+esc(l.val)+'</span></div>';
