@@ -347,6 +347,28 @@ body::before{display:none;}
 .rank-num{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--t3);width:20px;}
 .rank-name{flex:1;font-size:13px;color:var(--t);}
 .rank-score{font-size:13px;font-weight:700;color:var(--t2);min-width:24px;text-align:right;}
+
+/* ── MODELS ── */
+.models-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media(max-width:600px){.models-grid{grid-template-columns:1fr;}}
+.model-card{border:1px solid var(--line);background:transparent;overflow:hidden;transition:border-color .12s;}
+.model-card:hover{border-color:var(--line2);}
+.model-card.has-vote{border-left:3px solid #e0a030;}
+.model-thumb{width:100%;aspect-ratio:3/4;background:var(--bg3);position:relative;overflow:hidden;}
+.model-thumb-img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;}
+.model-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--t4);}
+.model-edit-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.45);border:none;color:#fff;font-size:11px;padding:2px 8px;cursor:pointer;opacity:0;transition:opacity .12s;backdrop-filter:blur(4px);}
+.model-card:hover .model-edit-btn{opacity:1;}
+.model-body{padding:13px 14px;}
+.model-name{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--t);margin-bottom:4px;}
+.model-genre{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+.status-toggle{display:flex;gap:0;border:1px solid var(--line);width:100%;margin-bottom:12px;}
+.status-btn{flex:1;padding:6px 4px;font-size:11px;font-family:var(--font-body);cursor:pointer;border:none;border-right:1px solid var(--line);background:transparent;color:var(--t3);transition:all .12s;text-align:center;letter-spacing:.03em;}
+.status-btn:last-child{border-right:none;}
+.status-btn.active-dispo{background:var(--green);color:#fff;font-weight:600;}
+.status-btn.active-attente{background:var(--amber);color:#fff;font-weight:600;}
+[data-theme="light"] .status-btn.active-attente{color:#fff;}
+.status-btn.active-indispo{background:var(--red);color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
@@ -385,6 +407,7 @@ body::before{display:none;}
       <div class="user-pill" id="user-pill"><span class="user-pill-dot" id="user-pill-dot"></span><span id="user-pill-name"></span></div>
       <a class="nav-link" id="admin-link" style="display:none" onclick="showPage('page-admin')">Admin</a>
       <a class="nav-link" onclick="showPage('page-venues')">Lieux</a>
+      <a class="nav-link" onclick="showPage('page-models')">Modèles</a>
       <button class="theme-topbar-btn" id="theme-topbar-btn" onclick="toggleTheme()" title="Changer de thème"></button>
       <a class="nav-link" onclick="doLogout()">Déconnexion</a>
     </div>
@@ -479,6 +502,49 @@ body::before{display:none;}
     <div class="modal-footer">
       <div><button class="btn btn-danger btn-sm" id="venue-delete-btn" style="display:none" onclick="deleteVenueFromModal()">Supprimer</button></div>
       <div class="modal-footer-right"><button class="btn" onclick="closeModal('venue-modal')">Annuler</button><button class="btn btn-primary" onclick="saveVenue()">Enregistrer</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE MODÈLES -->
+<div class="page" id="page-models">
+  <button class="admin-back" onclick="showPage('page-main')">← Retour</button>
+  <div class="topbar" style="margin-bottom:16px">
+    <div>
+      <div class="header-eyebrow">Shooting · Casting</div>
+      <div class="header-wordmark"><span>SEGMENTS</span> <span style="color:var(--t3);font-weight:400;font-size:16px">Modèles</span></div>
+      <div style="font-size:13px;color:var(--t3);margin-top:4px">Shortlist — notez vos préférences.</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" id="btn-add-model" style="display:none" onclick="openModelModal()">+ Modèle</button>
+    </div>
+  </div>
+  <div id="models-ranking" style="margin-bottom:24px"></div>
+  <div id="models-grid"></div>
+</div>
+
+<!-- MODEL MODAL -->
+<div class="modal-overlay" id="model-modal">
+  <div class="modal">
+    <div class="modal-title" id="model-modal-title">Nouveau modèle</div>
+    <input type="hidden" id="model-edit-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="model-name-in" placeholder="Annie"></div>
+      <div class="form-group"><label class="form-label">Genre</label>
+        <select class="form-select" id="model-genre-in">
+          <option value="F">Femme</option>
+          <option value="H">Homme</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Lien profil (Folkr…)</label><input class="form-input" id="model-link-in" placeholder="https://folkr-studio.com/portfolio/annie/"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="model-notes-in" placeholder="Mesures, contraintes, remarques…"></textarea></div>
+    <div class="form-group"><label class="form-label">Image 1 (URL)</label><input class="form-input" id="model-img1-in" placeholder="https://…"></div>
+    <div class="form-group"><label class="form-label">Image 2 (URL)</label><input class="form-input" id="model-img2-in" placeholder="https://…"></div>
+    <div class="form-group"><label class="form-label">Image 3 (URL)</label><input class="form-input" id="model-img3-in" placeholder="https://…"></div>
+    <div class="modal-footer">
+      <div><button class="btn btn-danger btn-sm" id="model-delete-btn" style="display:none" onclick="deleteModelFromModal()">Supprimer</button></div>
+      <div class="modal-footer-right"><button class="btn" onclick="closeModal('model-modal')">Annuler</button><button class="btn btn-primary" onclick="saveModel()">Enregistrer</button></div>
     </div>
   </div>
 </div>
@@ -1126,6 +1192,9 @@ function showPage(id){
   if(id==='page-venues'){
     loadVenues().then(function(){renderVenues();});
   }
+  if(id==='page-models'){
+    loadModels().then(function(){renderModels();});
+  }
 }
 function switchView(id,btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');
@@ -1142,7 +1211,7 @@ function switchAdminTab(id,btn){
   document.querySelectorAll('.admin-tab-content').forEach(function(c){c.classList.remove('active');});
   document.getElementById(id).classList.add('active');
 }
-['task-modal','person-modal','account-modal','planning-modal','venue-modal'].forEach(function(mid){
+['task-modal','person-modal','account-modal','planning-modal','venue-modal','model-modal'].forEach(function(mid){
   document.getElementById(mid).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
 
@@ -1417,7 +1486,246 @@ var VENUES_SEED=[
   {name:'Maison Felisa',loc:'Saint-Bauzély',dist:'55 min Avignon',pool:false,rooms:'6-7 pers',price:'1 350€/semaine',type:'logement+shooting',link:'https://maison-felisa.com/maison-vacances',notes:'À priori pas cher.'},
 ];
 
-// ── SEED DATA ──
+// ── MODELS ──
+var MODELS=[];
+var MODEL_VOTES={};
+
+var MODELS_SEED=[
+  {name:'Annie',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/annie/',notes:'',status:'en_attente',position:0},
+  {name:'Camille J',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/camille-j/',notes:'',status:'en_attente',position:1},
+  {name:'Fanny E',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/fanny-e/',notes:'',status:'en_attente',position:2},
+  {name:'Héloïse L',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/heloise-l/',notes:'',status:'en_attente',position:3},
+  {name:'Inès L',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/ines-l/',notes:'',status:'en_attente',position:4},
+  {name:'Junior',genre:'H',agency:'Folkr',link:'https://folkr-studio.com/portfolio/junior/',notes:'',status:'en_attente',position:5},
+  {name:'Louane',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/louane/',notes:'',status:'en_attente',position:6},
+  {name:'Morgan',genre:'H',agency:'Folkr',link:'https://folkr-studio.com/portfolio/morgan/',notes:'',status:'en_attente',position:7},
+  {name:'Teva',genre:'H',agency:'Folkr',link:'https://folkr-studio.com/portfolio/teva/',notes:'',status:'en_attente',position:8},
+  {name:'Valeriia',genre:'F',agency:'Folkr',link:'https://folkr-studio.com/portfolio/valeriia/',notes:'',status:'en_attente',position:9},
+];
+
+function loadModels(){
+  return Promise.all([
+    supaFetch('models?select=*&order=position').then(function(r){return r.json();}),
+    supaFetch('model_votes?select=model_id,person_id,vote').then(function(r){return r.json();})
+  ]).then(function(res){
+    MODELS=Array.isArray(res[0])?res[0]:[];
+    MODEL_VOTES={};
+    if(Array.isArray(res[1]))res[1].forEach(function(r){
+      if(!MODEL_VOTES[r.model_id])MODEL_VOTES[r.model_id]={};
+      MODEL_VOTES[r.model_id][r.person_id]=r.vote;
+    });
+    if(!MODELS.length){
+      var seed=MODELS_SEED.map(function(m,i){return Object.assign({},m,{position:i,updated_at:new Date().toISOString()});});
+      return supaFetch('models','POST',seed).then(function(r){return r.json();}).then(function(rows){
+        MODELS=Array.isArray(rows)?rows:seed;
+      });
+    }
+  }).catch(function(){});
+}
+
+function modelAvg(id){
+  var v=Object.values(MODEL_VOTES[id]||{}).filter(function(x){return x>0;});
+  return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;
+}
+function modelVoteCount(id){
+  return Object.values(MODEL_VOTES[id]||{}).filter(function(x){return x>0;}).length;
+}
+
+function voteModel(id,stars){
+  if(!SESSION)return;
+  var pid=SESSION.person_id;
+  if(!MODEL_VOTES[id])MODEL_VOTES[id]={};
+  var cur=MODEL_VOTES[id][pid]||0;
+  var nv=cur===stars?0:stars;
+  MODEL_VOTES[id][pid]=nv;
+  renderModels();
+  sync(function(){return supaFetch('model_votes?on_conflict=model_id,person_id','POST',[{model_id:id,person_id:pid,vote:nv,updated_at:new Date().toISOString()}]);});
+}
+
+function setModelStatus(id,status){
+  if(!isAdmin())return;
+  var m=MODELS.find(function(x){return x.id===id;});
+  if(!m)return;
+  m.status=status;
+  renderModels();
+  sync(function(){return supaFetch('models?id=eq.'+id,'PATCH',{status:status,updated_at:new Date().toISOString()});});
+}
+
+function modelStarsHTML(id,myVote){
+  var avg=modelAvg(id);
+  var html='<div style="display:flex;align-items:center;gap:7px;"><div style="display:flex;gap:1px;" id="mstars-'+id+'">';
+  for(var i=1;i<=5;i++){
+    var filled=myVote>=i;
+    var col=filled?'#e0a030':'var(--line2)';
+    html+='<span onclick="voteModel('+id+','+i+')" onmouseover="hoverModelStars('+id+','+i+')" onmouseout="unhoverModelStars('+id+')" style="cursor:pointer;font-size:22px;color:'+col+';transition:color .1s;user-select:none;">★</span>';
+  }
+  html+='</div>';
+  if(avg!==null){
+    html+='<span style="font-size:13px;font-weight:700;color:var(--t)">'+avg.toFixed(1)+'</span>';
+    html+='<span style="font-size:12px;color:var(--t3)">· '+modelVoteCount(id)+' vote'+(modelVoteCount(id)>1?'s':'')+'</span>';
+  } else {
+    html+='<span style="font-size:12px;color:var(--t3)">Pas encore noté</span>';
+  }
+  if(myVote>0)html+='<button onclick="voteModel('+id+',0)" style="font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:underline;">✕</button>';
+  return html+'</div>';
+}
+
+function hoverModelStars(id,n){
+  var el=document.getElementById('mstars-'+id);if(!el)return;
+  el.querySelectorAll('span').forEach(function(s,i){s.style.color=i<n?'#e0a030':'var(--line2)';});
+}
+function unhoverModelStars(id){
+  var pid=SESSION?SESSION.person_id:null;
+  var mv=pid?(MODEL_VOTES[id]||{})[pid]||0:0;
+  var el=document.getElementById('mstars-'+id);if(!el)return;
+  el.querySelectorAll('span').forEach(function(s,i){s.style.color=i<mv?'#e0a030':'var(--line2)';});
+}
+
+function modelThumbHTML(m){
+  var imgs=[m.img1,m.img2,m.img3].filter(Boolean);
+  var editBtn=isAdmin()?'<button class="model-edit-btn" onclick="openModelModal('+m.id+')">✏ Modifier</button>':'';
+  if(!imgs.length){
+    return '<div class="model-thumb">'
+      +'<div class="model-thumb-placeholder">'+(m.genre==='H'?'♂':'♀')+'</div>'
+      +editBtn+'</div>';
+  }
+  if(!MODEL_CAROUSEL)MODEL_CAROUSEL={};
+  var idx=MODEL_CAROUSEL[m.id]||0;
+  var prevBtn=imgs.length>1?'<button class="carousel-btn prev" onclick="modelCarouselNext('+m.id+',-1)">‹</button>':'';
+  var nextBtn=imgs.length>1?'<button class="carousel-btn next" onclick="modelCarouselNext('+m.id+',1)">›</button>':'';
+  var dots=imgs.length>1?'<div class="carousel-dots" id="mcdots-'+m.id+'">'+imgs.map(function(_,i){return '<div class="carousel-dot'+(i===idx?' active':'')+'"></div>';}).join('')+'</div>':'';
+  return '<div class="model-thumb">'
+    +'<img id="mcimg-'+m.id+'" class="model-thumb-img" src="'+esc(imgs[idx])+'" onerror="this.parentNode.querySelector(\'.model-thumb-placeholder\')&&(this.style.display=\'none\')">'
+    +prevBtn+nextBtn+dots+editBtn+'</div>';
+}
+
+var MODEL_CAROUSEL={};
+function modelCarouselNext(id,dir){
+  var m=MODELS.find(function(x){return x.id===id;});if(!m)return;
+  var imgs=[m.img1,m.img2,m.img3].filter(Boolean);
+  if(imgs.length<2)return;
+  MODEL_CAROUSEL[id]=((MODEL_CAROUSEL[id]||0)+dir+imgs.length)%imgs.length;
+  var img=document.getElementById('mcimg-'+id);
+  var dots=document.getElementById('mcdots-'+id);
+  if(img)img.src=imgs[MODEL_CAROUSEL[id]];
+  if(dots)dots.querySelectorAll('.carousel-dot').forEach(function(d,i){d.classList.toggle('active',i===MODEL_CAROUSEL[id]);});
+}
+
+function renderModels(){
+  var pid=SESSION?SESSION.person_id:null;
+  if(isAdmin()){var b=document.getElementById('btn-add-model');if(b)b.style.display='inline-block';}
+
+  // Ranking
+  var ranked=MODELS.slice().sort(function(a,b){
+    var aa=modelAvg(a.id)||0,ab=modelAvg(b.id)||0;
+    if(ab!==aa)return ab-aa;
+    return modelVoteCount(b.id)-modelVoteCount(a.id);
+  });
+  var rankHTML='';
+  if(ranked.some(function(m){return modelVoteCount(m.id)>0;})){
+    rankHTML='<div style="margin-bottom:10px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.14em;">Classement</div><div class="venues-ranking">';
+    var n=0;
+    ranked.forEach(function(m){
+      var avg=modelAvg(m.id);if(!avg)return;n++;
+      var statusDot={'dispo':'🟢','en_attente':'🟡','indispo':'🔴'}[m.status]||'🟡';
+      rankHTML+='<div class="rank-row">'
+        +'<div class="rank-num">'+n+'</div>'
+        +'<div class="rank-name">'+statusDot+' '+esc(m.name)+'</div>'
+        +'<div style="display:flex;gap:1px;">'+[1,2,3,4,5].map(function(s){return '<span style="font-size:13px;color:'+(avg>=s-0.5?'#e0a030':'var(--line2)')+'">★</span>';}).join('')+'</div>'
+        +'<div class="rank-score">'+avg.toFixed(1)+'</div>'
+        +'<span style="font-size:11px;color:var(--t3);margin-left:3px;">('+modelVoteCount(m.id)+')</span>'
+        +'</div>';
+    });
+    rankHTML+='</div>';
+  }
+  document.getElementById('models-ranking').innerHTML=rankHTML;
+
+  // Grid
+  var html='<div class="models-grid">'+MODELS.map(function(m){
+    var myVote=pid?(MODEL_VOTES[m.id]||{})[pid]||0:0;
+    var borderStyle=myVote>0?'border-left:3px solid #e0a030;':'';
+    var statusLabel={'dispo':'Disponible','en_attente':'En attente réponse','indispo':'Non disponible'}[m.status]||'En attente réponse';
+    var statusColor={'dispo':'var(--green)','en_attente':'var(--amber)','indispo':'var(--red)'}[m.status]||'var(--amber)';
+
+    var statusBtns='<div class="status-toggle">'
+      +'<button class="status-btn'+(m.status==='dispo'?' active-dispo':'')+'" onclick="setModelStatus('+m.id+',\'dispo\')">✓ Dispo</button>'
+      +'<button class="status-btn'+(m.status==='en_attente'?' active-attente':'')+'" onclick="setModelStatus('+m.id+',\'en_attente\')">⏳ En attente</button>'
+      +'<button class="status-btn'+(m.status==='indispo'?' active-indispo':'')+'" onclick="setModelStatus('+m.id+',\'indispo\')">✕ Indispo</button>'
+      +'</div>';
+
+    return '<div class="model-card" style="'+borderStyle+'">'
+      +modelThumbHTML(m)
+      +'<div class="model-body">'
+      +'<div class="model-name">'+esc(m.name)+'</div>'
+      +'<div class="model-genre">'+(m.genre==='H'?'Homme':'Femme')+(m.agency?' · '+esc(m.agency):'')+'</div>'
+      +statusBtns
+      +(m.notes?'<div style="font-size:12px;color:var(--t3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)">'+esc(m.notes)+'</div>':'')
+      +(m.link?'<div style="margin-bottom:10px"><a class="venue-link" href="'+esc(m.link)+'" target="_blank" rel="noopener">Voir le profil →</a></div>':'')
+      +'<div style="margin-top:2px;padding-top:10px;border-top:1px solid var(--line);">'
+      +'<div style="font-size:11px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Votre note</div>'
+      +modelStarsHTML(m.id,myVote)
+      +'</div></div></div>';
+  }).join('')+'</div>';
+  document.getElementById('models-grid').innerHTML=html;
+}
+
+// MODEL CRUD
+function openModelModal(id){
+  if(!isAdmin())return;
+  var m=id?MODELS.find(function(x){return x.id===id;}):null;
+  document.getElementById('model-modal-title').textContent=m?'Modifier':'Nouveau modèle';
+  document.getElementById('model-edit-id').value=id||'';
+  document.getElementById('model-delete-btn').style.display=m?'inline-block':'none';
+  document.getElementById('model-name-in').value=m?m.name||'':'';
+  document.getElementById('model-genre-in').value=m?m.genre||'F':'F';
+  document.getElementById('model-link-in').value=m?m.link||'':'';
+  document.getElementById('model-notes-in').value=m?m.notes||'':'';
+  document.getElementById('model-img1-in').value=m?m.img1||'':'';
+  document.getElementById('model-img2-in').value=m?m.img2||'':'';
+  document.getElementById('model-img3-in').value=m?m.img3||'':'';
+  document.getElementById('model-modal').classList.add('open');
+}
+function saveModel(){
+  var eid=parseInt(document.getElementById('model-edit-id').value)||null;
+  var data={
+    name:document.getElementById('model-name-in').value.trim(),
+    genre:document.getElementById('model-genre-in').value,
+    link:document.getElementById('model-link-in').value.trim(),
+    notes:document.getElementById('model-notes-in').value.trim(),
+    img1:document.getElementById('model-img1-in').value.trim()||null,
+    img2:document.getElementById('model-img2-in').value.trim()||null,
+    img3:document.getElementById('model-img3-in').value.trim()||null,
+    updated_at:new Date().toISOString()
+  };
+  if(!data.name)return;
+  closeModal('model-modal');
+  if(eid){
+    var idx=MODELS.findIndex(function(m){return m.id===eid;});
+    if(idx>-1)MODELS[idx]=Object.assign({},MODELS[idx],data);
+    renderModels();
+    sync(function(){return supaFetch('models?id=eq.'+eid,'PATCH',data);});
+  } else {
+    data.position=MODELS.length;data.status='en_attente';
+    sync(function(){
+      return supaFetch('models','POST',[data]).then(function(r){return r.json();}).then(function(rows){
+        if(rows&&rows[0])MODELS.push(rows[0]);
+        renderModels();
+      });
+    });
+  }
+}
+function deleteModelFromModal(){
+  var eid=parseInt(document.getElementById('model-edit-id').value);
+  if(!eid||!confirm('Supprimer ce modèle ?'))return;
+  closeModal('model-modal');
+  MODELS=MODELS.filter(function(m){return m.id!==eid;});
+  MODELS.forEach(function(m,i){m.position=i;});
+  renderModels();
+  supaDelete('models','id',eid).then(function(){
+    var updates=MODELS.map(function(m){return supaFetch('models?id=eq.'+m.id,'PATCH',{position:m.position});});
+    Promise.all(updates);
+  });
+}
 var SEED_PERSONS=[
   {id:'raph',name:'Raph',role:'Production',color:0,position:0},
   {id:'clara',name:'Clara',role:'Cliente — LPT',color:1,position:1},
