@@ -1247,13 +1247,13 @@ function updateCarousel(id,imgs){
   }
 }
 
-function thumbHTML(v){
+function thumbHTML(v,idx){
   var imgs=[v.img1,v.img2,v.img3].filter(Boolean);
   var editBtn=isAdmin()?'<button class="venue-edit-btn" onclick="openVenueModal('+v.id+')">✏ Modifier</button>':'';
   if(!imgs.length){
     return '<div class="venue-thumb">'
       +'<div class="venue-thumb-placeholder">'+esc(v.loc||'Option')+'</div>'
-      +'<span class="venue-thumb-label">Option '+v.position+'</span>'
+      +'<span class="venue-thumb-label">Option '+(idx+1)+'</span>'
       +editBtn+'</div>';
   }
   var dotsHTML='<div class="carousel-dots" id="cdots-'+v.id+'">'+imgs.map(function(_,i){return '<div class="carousel-dot'+(i===0?' active':'')+'"></div>';}).join('')+'</div>';
@@ -1261,7 +1261,7 @@ function thumbHTML(v){
   var nextBtn=imgs.length>1?'<button class="carousel-btn next" onclick="carouselNext('+v.id+',1)">›</button>':'';
   return '<div class="venue-thumb">'
     +'<img id="cimg-'+v.id+'" class="venue-thumb-img" src="'+esc(imgs[0])+'" onerror="this.style.display=\'none\'">'
-    +'<span class="venue-thumb-label">Option '+v.position+'</span>'
+    +'<span class="venue-thumb-label">Option '+(idx+1)+'</span>'
     +prevBtn+nextBtn+dotsHTML+editBtn+'</div>';
 }
 
@@ -1294,7 +1294,7 @@ function renderVenues(){
   document.getElementById('venues-score-bar').innerHTML=rankHTML;
 
   // Grid
-  var html='<div class="venues-grid">'+VENUES.map(function(v){
+  var html='<div class="venues-grid">'+VENUES.map(function(v,idx){
     var myVote=pid?(VENUE_VOTES[v.id]||{})[pid]||0:0;
     var borderStyle=myVote>0?'border-left:3px solid #e0a030;':'';
     var infoLines=[
@@ -1310,7 +1310,7 @@ function renderVenues(){
         +'<span style="color:var(--t);font-weight:500">'+esc(l.val)+'</span></div>';
     }).join('');
     return '<div class="venue-card" style="'+borderStyle+'">'
-      +thumbHTML(v)
+      +thumbHTML(v,idx)
       +'<div class="venue-body">'
       +'<div class="venue-name">'+esc(v.name)+'</div>'
       +'<div class="venue-loc" style="margin-bottom:8px">'+esc(v.loc||'')+'</div>'
@@ -1385,8 +1385,14 @@ function deleteVenueFromModal(){
   if(!eid||!confirm('Supprimer ce lieu ?'))return;
   closeModal('venue-modal');
   VENUES=VENUES.filter(function(v){return v.id!==eid;});
+  // Reorder positions
+  VENUES.forEach(function(v,i){v.position=i;});
   renderVenues();
-  sync(function(){return supaDelete('venues','id',eid);});
+  supaDelete('venues','id',eid).then(function(){
+    // Update positions in DB
+    var updates=VENUES.map(function(v){return supaFetch('venues?id=eq.'+v.id,'PATCH',{position:v.position,updated_at:new Date().toISOString()});});
+    Promise.all(updates);
+  });
 }
 
 // Seed static venues data (only used if venues table empty)
