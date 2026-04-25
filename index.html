@@ -1036,20 +1036,18 @@ function saveTask(){
     closeModal('task-modal');render();
     sync(function(){return supaFetch('tasks?on_conflict=id','POST',[{id:editingTaskId,pole:pole,title:title,detail:detail,actors:JSON.stringify(actors),priority:currentPrio,updated_at:new Date().toISOString()}]);});
   } else {
-    var newTask={pole:pole,title:title,detail:detail,actors:actors,priority:currentPrio,done:false};
     closeModal('task-modal');
-    sync(function(){
-      return supaFetch('tasks','POST',[{pole:pole,title:title,detail:detail,actors:JSON.stringify(actors),priority:currentPrio,done:false,subtasks:'[]',comments:'[]',updated_at:new Date().toISOString()}])
-        .then(function(r){return r.json();})
-        .then(function(rows){
-          if(rows&&rows[0]){
-            var t=rows[0];
-            var actors2=[];try{actors2=typeof t.actors==='string'?JSON.parse(t.actors):(t.actors||[]);}catch(e){}
-            TASKS.push({id:t.id,pole:t.pole||pole,title:t.title||title,detail:t.detail||detail,actors:actors2,priority:t.priority||currentPrio,done:false});
-          }
-          render();
-        });
-    });
+    supaFetch('tasks','POST',[{pole:pole,title:title,detail:detail,actors:JSON.stringify(actors),priority:currentPrio,done:false,subtasks:'[]',comments:'[]',updated_at:new Date().toISOString()}])
+      .then(function(r){return r.json();})
+      .then(function(rows){
+        if(rows&&rows[0]){
+          var t=rows[0];
+          var a=[];try{a=typeof t.actors==='string'?JSON.parse(t.actors):(t.actors||[]);}catch(e){}
+          TASKS.push({id:t.id,pole:t.pole||pole,title:t.title||title,detail:t.detail||detail,actors:a,priority:t.priority||currentPrio,done:false});
+        }
+        render();
+        setSyncStatus('ok');
+      }).catch(function(e){console.error(e);setSyncStatus('error');});
   }
 }
 
