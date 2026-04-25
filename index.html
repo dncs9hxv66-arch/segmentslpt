@@ -369,6 +369,7 @@ body::before{display:none;}
 .status-btn.active-attente{background:var(--amber);color:#fff;font-weight:600;}
 [data-theme="light"] .status-btn.active-attente{color:#fff;}
 .status-btn.active-indispo{background:var(--red);color:#fff;font-weight:600;}
+.status-btn.active-valide{background:var(--blue);color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
@@ -1378,11 +1379,17 @@ function renderVenues(){
         +'<span style="color:var(--t3)">'+l.label+'</span>'
         +'<span style="color:var(--t);font-weight:500">'+esc(l.val)+'</span></div>';
     }).join('');
+    var venueStatusBtns=isAdmin()?'<div class="status-toggle" style="margin-bottom:10px;">'
+      +'<button class="status-btn'+(v.status==='valide'?' active-valide':'')+'" onclick="setVenueStatus('+v.id+',\'valide\')">★ Validé</button>'
+      +'<button class="status-btn'+(v.status==='en_attente'||!v.status?' active-attente':'')+'" onclick="setVenueStatus('+v.id+',\'en_attente\')">⏳ Attente</button>'
+      +'<button class="status-btn'+(v.status==='indispo'?' active-indispo':'')+'" onclick="setVenueStatus('+v.id+',\'indispo\')">✕ Écarté</button>'
+      +'</div>':'';
     return '<div class="venue-card" style="'+borderStyle+'">'
       +thumbHTML(v,idx)
       +'<div class="venue-body">'
       +'<div class="venue-name">'+esc(v.name)+'</div>'
       +'<div class="venue-loc" style="margin-bottom:8px">'+esc(v.loc||'')+'</div>'
+      +venueStatusBtns
       +infoHTML
       +(v.notes?'<div style="font-size:12px;color:var(--t3);margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">'+esc(v.notes)+'</div>':'')
       +(v.link?'<div style="margin-top:8px"><a class="venue-link" href="'+esc(v.link)+'" target="_blank" rel="noopener">Voir le lieu →</a></div>':'')
@@ -1415,6 +1422,15 @@ function openVenueModal(id){
   document.getElementById('venue-img3-in').value=v?v.img3||'':'';
   document.getElementById('venue-modal').classList.add('open');
 }
+function setVenueStatus(id,status){
+  if(!isAdmin())return;
+  var v=VENUES.find(function(x){return x.id===id;});
+  if(!v)return;
+  v.status=status;
+  renderVenues();
+  sync(function(){return supaFetch('venues?id=eq.'+id,'PATCH',{status:status,updated_at:new Date().toISOString()});});
+}
+
 function saveVenue(){
   var eid=parseInt(document.getElementById('venue-edit-id').value)||null;
   var data={
@@ -1627,7 +1643,7 @@ function renderModels(){
     var n=0;
     ranked.forEach(function(m){
       var avg=modelAvg(m.id);if(!avg)return;n++;
-      var statusDot={'dispo':'🟢','en_attente':'🟡','indispo':'🔴'}[m.status]||'🟡';
+      var statusDot={'dispo':'🟢','en_attente':'🟡','indispo':'🔴','valide':'🔵'}[m.status]||'🟡';
       rankHTML+='<div class="rank-row">'
         +'<div class="rank-num">'+n+'</div>'
         +'<div class="rank-name">'+statusDot+' '+esc(m.name)+'</div>'
@@ -1648,8 +1664,9 @@ function renderModels(){
     var statusColor={'dispo':'var(--green)','en_attente':'var(--amber)','indispo':'var(--red)'}[m.status]||'var(--amber)';
 
     var statusBtns='<div class="status-toggle">'
+      +'<button class="status-btn'+(m.status==='valide'?' active-valide':'')+'" onclick="setModelStatus('+m.id+',\'valide\')">★ Validé</button>'
       +'<button class="status-btn'+(m.status==='dispo'?' active-dispo':'')+'" onclick="setModelStatus('+m.id+',\'dispo\')">✓ Dispo</button>'
-      +'<button class="status-btn'+(m.status==='en_attente'?' active-attente':'')+'" onclick="setModelStatus('+m.id+',\'en_attente\')">⏳ En attente</button>'
+      +'<button class="status-btn'+(m.status==='en_attente'?' active-attente':'')+'" onclick="setModelStatus('+m.id+',\'en_attente\')">⏳ Attente</button>'
       +'<button class="status-btn'+(m.status==='indispo'?' active-indispo':'')+'" onclick="setModelStatus('+m.id+',\'indispo\')">✕ Indispo</button>'
       +'</div>';
 
